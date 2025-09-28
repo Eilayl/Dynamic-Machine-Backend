@@ -1,0 +1,36 @@
+# --- Python basics ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+
+# --- SQLite database ---
+*.db
+
+# --- Logs ---
+*.log
+
+# --- Build outputs ---
+build/
+dist/
+*.egg-info/
+
+# --- Environment variables ---
+.env
+.env.*
+
+# --- IDE/editor junk ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
