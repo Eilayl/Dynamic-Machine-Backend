@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Depends
-from requests import session
 from models.machine import MachineCreate, Machine, MachineUpdate
 from sqlmodel import Session, select
 from database import get_session
