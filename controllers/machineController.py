@@ -18,6 +18,10 @@ class SchemaMethod(str, Enum):
 @router.post("/create", response_model=MachineRead)
 def create_machine(machine: MachineCreate, session: Session = Depends(get_session)):
     db_machine = Machine(**machine.model_dump())
+    if machine.name.len() > 10:
+        raise HTTPException(status_code=400, detail="Name too long")
+    if(machine.email is not EmailStr):
+        raise HTTPException(status_code=400, detail="Email is not valid")
     session.add(db_machine)
     session.commit()
     session.refresh(db_machine)

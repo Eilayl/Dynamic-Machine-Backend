@@ -29,7 +29,7 @@ class MachineCreate(BaseModel):
     location: str
     number: int
     float_number: float
-    enum: Literal["active", "no_active"] = Field(title="Status")
+    enum: Literal["active", "no_active"]
     password: str
 
 
@@ -38,8 +38,8 @@ class MachineUpdate(BaseModel):
     email: Optional[EmailStr] = None
     location: Optional[str] = None
     number: Optional[int] = None
-    float_number: Optional[float] = None
-    enum: Optional[Literal["active", "no_active"]] = Field(default=None, title="Status")
+    float_number: Optional[float] = None    
+    enum: Optional[Literal["active", "no_active"]]
     password: Optional[str] = None
 
 
@@ -50,6 +50,6 @@ class MachineRead(BaseModel):
     location: str
     number: int
     float_number: float
-    enum: Literal["active", "no_active"] = Field(title="Status")
+    enum: Literal["active", "no_active"]
     created_at: datetime
     updated_at: Optional[datetime] = None
