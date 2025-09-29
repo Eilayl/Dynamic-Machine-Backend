@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends
 from models.machine import MachineCreate, Machine, MachineUpdate, MachineRead
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_
 from database import get_session
 from pydantic import EmailStr
 from datetime import datetime
 from enum import Enum
-
+from typing import List
 router = APIRouter(
     prefix="/machine",
     tags=["machines"],
@@ -17,32 +17,50 @@ class SchemaMethod(str, Enum):
 
 @router.post("/create", response_model=MachineRead)
 def create_machine(machine: MachineCreate, session: Session = Depends(get_session)):
+    if(machine.enum not in ["active", "no_active"]):
+        raise HTTPException(status_code=400, detail="Invalid enum value")
+    if(len(machine.name) > 10):
+        raise HTTPException(status_code=400, detail="Name exceeds maximum length of 10 characters")
     db_machine = Machine(**machine.model_dump())
-    if machine.name.len() > 10:
-        raise HTTPException(status_code=400, detail="Name too long")
-    if(machine.email is not EmailStr):
-        raise HTTPException(status_code=400, detail="Email is not valid")
     session.add(db_machine)
     session.commit()
     session.refresh(db_machine)
     return db_machine
 
-@router.get('/get', response_model=MachineRead)
-def get_machine(email: EmailStr, id: int, session: Session = Depends(get_session)):
-    statement = select(Machine).where(Machine.email == email, Machine.id == id)
+@router.get('/get', response_model=List[MachineRead])
+def get_machine(email: EmailStr | None = None, id: int | None = None, session: Session = Depends(get_session)):
+    if not email and not id:
+        statement = select(Machine)
+        results = session.exec(statement)
+        machines = results.all()
+        return machines
+    
+    conditions = []
+    if email:
+        conditions.append(Machine.email == email)
+    if id:
+        conditions.append(Machine.id == id)
+    
+    if email and id:
+        statement = select(Machine).where(*conditions)
+    else:
+        statement = select(Machine).where(or_(*conditions))
+    
     results = session.exec(statement)
-    machine = results.first()
-    if not machine:
+    machines = results.all()
+    
+    if not machines:
         raise HTTPException(status_code=404, detail="Machine not found")
-    return machine
+    
+    return machines
 
-
+# ...existing code...
 @router.put('/update', response_model=MachineRead)
 def update_machine(machine: MachineUpdate, machine_id: int, session: Session = Depends(get_session)):
     db_machine = session.get(Machine, machine_id)
     if not db_machine:
         raise HTTPException(status_code=404, detail="Machine not found")
-    
+        
     for key, value in machine.model_dump(exclude_unset=True).items():
         setattr(db_machine, key, value)
     
