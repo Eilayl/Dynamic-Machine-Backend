@@ -14,6 +14,7 @@ router = APIRouter(
 class SchemaMethod(str, Enum):
     create = "create"
     update = "update"
+    read = "read"
 
 @router.post("/create", response_model=MachineRead)
 def create_machine(machine: MachineCreate, session: Session = Depends(get_session)):
@@ -36,16 +37,16 @@ def get_machine(email: EmailStr | None = None, id: int | None = None, session: S
         return machines
     
     conditions = []
-    if email:
+    if email and not id:
         conditions.append(Machine.email == email)
-    if id:
+    if id and not email:
         conditions.append(Machine.id == id)
     
     if email and id:
         statement = select(Machine).where(*conditions)
     else:
         statement = select(Machine).where(or_(*conditions))
-    
+
     results = session.exec(statement)
     machines = results.all()
     
@@ -76,5 +77,7 @@ def get_schema(method: SchemaMethod):
         return MachineCreate.model_json_schema()
     elif method == "update":
         return MachineUpdate.model_json_schema()
+    elif method == "read":
+        return MachineRead.model_json_schema()
     else:
         raise HTTPException(status_code=400, detail="Wrong method")

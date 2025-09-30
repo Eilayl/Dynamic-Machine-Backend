@@ -34,13 +34,13 @@ class MachineCreate(BaseModel):
 
 
 class MachineUpdate(BaseModel):
-    name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    location: Optional[str] = None
-    number: Optional[int] = None
-    float_number: Optional[float] = None    
-    enum: Optional[Literal["active", "no_active"]]
-    password: Optional[str] = None
+    name: str
+    email: EmailStr
+    location: str
+    number: int
+    float_number: float
+    enum: Literal["active", "no_active"]
+    password: str
 
 
 class MachineRead(BaseModel):
