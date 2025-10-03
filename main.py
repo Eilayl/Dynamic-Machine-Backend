@@ -6,13 +6,16 @@ import database
 
 app = FastAPI()
 
-# Get frontend URLs from environment variable
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+# Get frontend URL from environment variable and normalize it
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").strip()
+
 ALLOWED_ORIGINS = [
     FRONTEND_URL,
     "http://localhost:5173",
-    "http://localhost:3000", 
+    "http://localhost:3000",
 ]
+
+print("Allowed origins:", ALLOWED_ORIGINS)  # Debug log
 
 # Configure CORS
 app.add_middleware(
