@@ -28,34 +28,50 @@ def create_machine(machine: MachineCreate, session: Session = Depends(get_sessio
     session.refresh(db_machine)
     return db_machine
 
-@router.get('/get', response_model=List[MachineRead])
-def get_machine(email: EmailStr | None = None, id: int | None = None, session: Session = Depends(get_session)):
-    if not email and not id:
-        statement = select(Machine)
-        results = session.exec(statement)
-        machines = results.all()
-        return machines
-    
-    conditions = []
-    if email and not id:
-        conditions.append(Machine.email == email)
-    if id and not email:
-        conditions.append(Machine.id == id)
-    
-    if email and id:
-        statement = select(Machine).where(*conditions)
+
+@router.get("/get", response_model=List[MachineRead])
+def get_machine(id: str | None = None,email: EmailStr | None = None,session: Session = Depends(get_session)):
+    if id and email:
+        items = session.exec(select(Machine).where((Machine.id == id) & (Machine.email == email))).all()
+    elif id:
+        items = session.exec(select(Machine).where(Machine.id == id)).all()
+    elif email:
+        items = session.exec(select(Machine).where(Machine.email == email)).all()
     else:
-        statement = select(Machine).where(or_(*conditions))
+        items = session.exec(select(Machine)).all()
 
-    results = session.exec(statement)
-    machines = results.all()
-    
-    if not machines:
-        raise HTTPException(status_code=404, detail="Machine not found")
-    
-    return machines
+    if not items:
+        raise HTTPException(status_code=404, detail="No machines found")
 
-# ...existing code...
+    return items
+
+# @router.get('/get', response_model=List[MachineRead])
+# def get_machine(email: EmailStr | None = None, id: int | None = None, session: Session = Depends(get_session)):
+#     if not email and not id:
+#         statement = select(Machine)
+#         results = session.exec(statement)
+#         machines = results.all()
+#         return machines
+    
+#     conditions = []
+#     if email and not id:
+#         conditions.append(Machine.email == email)
+#     if id and not email:
+#         conditions.append(Machine.id == id)
+    
+#     if email and id:
+#         statement = select(Machine).where(*conditions)
+#     else:
+#         statement = select(Machine).where(or_(*conditions))
+
+#     results = session.exec(statement)
+#     machines = results.all()
+    
+#     if not machines:
+#         raise HTTPException(status_code=404, detail="Machine not found")
+    
+#     return machines
+
 @router.put('/update', response_model=MachineRead)
 def update_machine(machine: MachineUpdate, machine_id: int, session: Session = Depends(get_session)):
     db_machine = session.get(Machine, machine_id)
